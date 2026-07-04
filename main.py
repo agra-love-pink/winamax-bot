@@ -32,22 +32,23 @@ class WinamaxBot:
             print("🌐 Scraping Winamax...")
             self.driver.get("https://www.winamax.fr/")
             time.sleep(10)
-            # Extraction simplifiée (à améliorer plus tard)
+            # À améliorer plus tard avec de vrais sélecteurs
             return pd.DataFrame([{"match": "Test Match", "home": 2.1, "draw": 3.4, "away": 3.8}])
-        except:
+        except Exception as e:
+            print("Erreur scraping:", e)
             return pd.DataFrame()
 
     def analyze(self):
         df = self.scrape_winamax()
         if df.empty:
-            self.send_discord("⚠️ Aucun match trouvé.")
+            self.send_discord("⚠️ Aucun match trouvé sur Winamax.")
             return
 
         for _, row in df.iterrows():
-            msg = f"""🔥 **TEST BOT WINAMAX**
-Match : {row['match']}
+            msg = f"""🔥 **BOT WINAMAX DÉMARRÉ**
+Match test : {row['match']}
 Cote 1 : {row['home']}
-Bot démarré avec succès !"""
+Bot en cours d'exécution..."""
             print(msg)
             self.send_discord(msg)
 
@@ -58,4 +59,9 @@ Bot démarré avec succès !"""
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.analyze()
+    
+    # Garder le processus vivant pour Render
+    print("Bot en attente (5 minutes)...")
+    time.sleep(300)
+    
     bot.close()
