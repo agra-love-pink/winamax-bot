@@ -80,5 +80,5 @@ Cote 1 : {row['home']:.2f} | Value : +{value:.3f}"""
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.analyze()
-    time.sleep(600)  # Attend 10 minutes avant de relancer
+    time.sleep(1800)  # Attend 10 minutes avant de relancer
     bot.close()
