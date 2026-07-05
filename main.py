@@ -23,19 +23,33 @@ class WinamaxBot:
     def send_discord(self, message):
         try:
             requests.post(self.webhook_url, json={"content": message})
-            print("📲 Notification Discord envoyée")
         except:
-            print("⚠️ Erreur Discord")
+            pass
 
     def scrape_winamax(self):
         try:
-            print("🌐 Scraping Winamax...")
             self.driver.get("https://www.winamax.fr/")
-            time.sleep(10)
-            # À améliorer plus tard avec de vrais sélecteurs
-            return pd.DataFrame([{"match": "Test Match", "home": 2.1, "draw": 3.4, "away": 3.8}])
-        except Exception as e:
-            print("Erreur scraping:", e)
+            time.sleep(12)  # Attente pour chargement
+
+            matches = []
+            events = self.driver.find_elements(By.CSS_SELECTOR, "div.market, div.event, .odd")
+
+            for event in events[:10]:
+                try:
+                    teams = event.find_elements(By.CSS_SELECTOR, ".team-name, .participant")
+                    odds = event.find_elements(By.CSS_SELECTOR, ".odd, .price")
+
+                    if len(odds) >= 3 and len(teams) >= 2:
+                        matches.append({
+                            "match": f"{teams[0].text} - {teams[1].text}",
+                            "home": float(odds[0].text.replace(',', '.')),
+                            "draw": float(odds[1].text.replace(',', '.')),
+                            "away": float(odds[2].text.replace(',', '.')),
+                        })
+                except:
+                    continue
+            return pd.DataFrame(matches)
+        except:
             return pd.DataFrame()
 
     def analyze(self):
@@ -45,12 +59,14 @@ class WinamaxBot:
             return
 
         for _, row in df.iterrows():
-            msg = f"""🔥 **BOT WINAMAX DÉMARRÉ**
-Match test : {row['match']}
-Cote 1 : {row['home']}
-Bot en cours d'exécution..."""
-            print(msg)
-            self.send_discord(msg)
+            total = 1/row['home'] + 1/row['draw'] + 1/row['away']
+            value = row['home'] - (1 / (1/row['home'] / total))
+            
+            if value > 0.08:
+                msg = f"""🔥 **VALUE BET WINAMAX !**
+Match : {row['match']}
+Cote 1 : {row['home']:.2f} | Value : +{value:.3f}"""
+                self.send_discord(msg)
 
     def close(self):
         if self.driver:
@@ -59,9 +75,5 @@ Bot en cours d'exécution..."""
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.analyze()
-    
-    # Garder le processus vivant pour Render
-    print("Bot en attente (5 minutes)...")
-    time.sleep(300)
-    
+    time.sleep(300)  # Garder en vie
     bot.close()
