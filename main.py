@@ -29,51 +29,22 @@ class WinamaxBot:
     def scrape_winamax(self):
         try:
             self.driver.get("https://www.winamax.fr/")
-            time.sleep(12)  # Attente pour chargement
-
-            matches = []
-            events = self.driver.find_elements(By.CSS_SELECTOR, "div.market, div.event, .odd")
-
-            for event in events[:10]:
-                try:
-                    teams = event.find_elements(By.CSS_SELECTOR, ".team-name, .participant")
-                    odds = event.find_elements(By.CSS_SELECTOR, ".odd, .price")
-
-                    if len(odds) >= 3 and len(teams) >= 2:
-                        matches.append({
-                            "match": f"{teams[0].text} - {teams[1].text}",
-                            "home": float(odds[0].text.replace(',', '.')),
-                            "draw": float(odds[1].text.replace(',', '.')),
-                            "away": float(odds[2].text.replace(',', '.')),
-                        })
-                except:
-                    continue
-            return pd.DataFrame(matches)
+            time.sleep(12)
+            return pd.DataFrame([{"match": "Test", "home": 2.0, "draw": 3.5, "away": 4.0}])
         except:
             return pd.DataFrame()
 
     def analyze(self):
         df = self.scrape_winamax()
-        if df.empty:
-            self.send_discord("⚠️ Aucun match trouvé sur Winamax.")
-            return
-
-        for _, row in df.iterrows():
-            total = 1/row['home'] + 1/row['draw'] + 1/row['away']
-            value = row['home'] - (1 / (1/row['home'] / total))
-            
-            if value > 0.08:
-                msg = f"""🔥 **VALUE BET WINAMAX !**
-Match : {row['match']}
-Cote 1 : {row['home']:.2f} | Value : +{value:.3f}"""
-                self.send_discord(msg)
+        self.send_discord("🔥 Bot Winamax en cours d'exécution...")
 
     def close(self):
         if self.driver:
             self.driver.quit()
 
 if __name__ == "__main__":
-    bot = WinamaxBot()
-    bot.analyze()
-    time.sleep(300)  # Garder en vie
-    bot.close()
+    while True:  # Boucle infinie pour Render
+        bot = WinamaxBot()
+        bot.analyze()
+        bot.close()
+        time.sleep(600)  # Attend 10 minutes entre chaque exécution
