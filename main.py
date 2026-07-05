@@ -28,23 +28,57 @@ class WinamaxBot:
 
     def scrape_winamax(self):
         try:
+            print("🌐 Chargement de Winamax...")
             self.driver.get("https://www.winamax.fr/")
-            time.sleep(12)
-            return pd.DataFrame([{"match": "Test", "home": 2.0, "draw": 3.5, "away": 4.0}])
-        except:
+            time.sleep(12)  # Attente pour chargement complet
+
+            matches = []
+            # Récupère jusqu'à 45 matchs (limite à 30 pour l'instant)
+            events = self.driver.find_elements(By.CSS_SELECTOR, "div.market, div.event, .odd, .fixture")
+
+            for event in events[:30]:  # ← Ici on limite à 30 matchs
+                try:
+                    teams = event.find_elements(By.CSS_SELECTOR, ".team-name, .participant, .team")
+                    odds = event.find_elements(By.CSS_SELECTOR, ".odd, .price, button")
+
+                    if len(odds) >= 3 and len(teams) >= 2:
+                        matches.append({
+                            "match": f"{teams[0].text.strip()} - {teams[1].text.strip()}",
+                            "home": float(odds[0].text.replace(',', '.')),
+                            "draw": float(odds[1].text.replace(',', '.')),
+                            "away": float(odds[2].text.replace(',', '.')),
+                        })
+                except:
+                    continue
+
+            print(f"✅ {len(matches)} matchs récupérés sur Winamax")
+            return pd.DataFrame(matches)
+        except Exception as e:
+            print("Erreur scraping:", e)
             return pd.DataFrame()
 
     def analyze(self):
         df = self.scrape_winamax()
-        self.send_discord("🔥 Bot Winamax en cours d'exécution...")
+        if df.empty:
+            self.send_discord("⚠️ Aucun match trouvé sur Winamax.")
+            return
+
+        for _, row in df.iterrows():
+            total = 1/row['home'] + 1/row['draw'] + 1/row['away']
+            value = row['home'] - (1 / (1/row['home'] / total))
+            
+            if value > 0.08:   # Tu peux baisser à 0.05 si tu veux plus d'alertes
+                msg = f"""🔥 **VALUE BET WINAMAX !**
+Match : {row['match']}
+Cote 1 : {row['home']:.2f} | Value : +{value:.3f}"""
+                self.send_discord(msg)
 
     def close(self):
         if self.driver:
             self.driver.quit()
 
 if __name__ == "__main__":
-    while True:  # Boucle infinie pour Render
-        bot = WinamaxBot()
-        bot.analyze()
-        bot.close()
-        time.sleep(600)  # Attend 10 minutes entre chaque exécution
+    bot = WinamaxBot()
+    bot.analyze()
+    time.sleep(600)  # Attend 10 minutes avant de relancer
+    bot.close()
