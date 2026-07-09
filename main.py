@@ -25,11 +25,11 @@ class WinamaxBot:
             driver.get("https://www.winamax.fr/")
             time.sleep(15)
 
-            self.send_discord(f"✅ Bot Winamax actif\nPage chargée avec succès.")
+            self.send_discord("✅ **Bot Winamax actif**\nPage chargée avec succès.")
 
             driver.quit()
         except Exception as e:
-            self.send_discord(f"❌ Erreur : {str(e)[:150]}")
+            self.send_discord(f"❌ Erreur : {str(e)[:100]}")
 
 if __name__ == "__main__":
     bot = WinamaxBot()
