@@ -19,21 +19,19 @@ class WinamaxBot:
             options.add_argument("--headless")
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-gpu")
+            
             driver = webdriver.Chrome(options=options)
-            
             driver.get("https://www.winamax.fr/")
-            time.sleep(15)  # Plus d'attente
+            time.sleep(15)
 
-            # Meilleure détection
-            matches_count = len(driver.find_elements(By.CSS_SELECTOR, "div, button, .odd"))
-            
-            self.send_discord(f"✅ Bot actif\nNombre d'éléments détectés : {matches_count}\nScraping en cours...")
+            self.send_discord(f"✅ Bot Winamax actif\nPage chargée avec succès.")
 
             driver.quit()
         except Exception as e:
-            self.send_discord(f"❌ Erreur : {str(e)[:100]}")
+            self.send_discord(f"❌ Erreur : {str(e)[:150]}")
 
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.run()
-    time.sleep(300)
+    time.sleep(600)  # 10 minutes
