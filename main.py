@@ -1,8 +1,7 @@
-   from selenium import webdriver
+from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
 import requests
-import re
 
 class WinamaxBot:
     def __init__(self):
@@ -26,15 +25,7 @@ class WinamaxBot:
             driver.get("https://www.winamax.fr/")
             time.sleep(15)
 
-            # Meilleure détection possible
-            page_text = driver.page_source
-            matches = re.findall(r'([A-Za-z0-9 ]+ - [A-Za-z0-9 ]+).*?(\d+[,.]\d+).*?(\d+[,.]\d+).*?(\d+[,.]\d+)', page_text)
-
-            count = len(matches)
-            self.send_discord(f"✅ Bot actif\n{count} matchs potentiels détectés")
-
-            if count > 0:
-                self.send_discord(f"📊 Premier match détecté : {matches[0][0]}")
+            self.send_discord("✅ **Bot Winamax actif** - Page chargée avec succès.")
 
             driver.quit()
         except Exception as e:
@@ -43,4 +34,4 @@ class WinamaxBot:
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.run()
-    time.sleep(900)  # 15 minutes
+    time.sleep(600)
