@@ -25,7 +25,11 @@ class WinamaxBot:
             driver.get("https://www.winamax.fr/")
             time.sleep(15)
 
-            self.send_discord("✅ **Bot Winamax actif**\nPage chargée avec succès.")
+            # Meilleure détection des matchs
+            elements = driver.find_elements(By.TAG_NAME, "div")
+            match_count = len([e for e in elements if len(e.text) > 5])
+
+            self.send_discord(f"✅ Bot actif\nÉléments détectés : {match_count}\nPrêt à scraper.")
 
             driver.quit()
         except Exception as e:
@@ -34,4 +38,4 @@ class WinamaxBot:
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.run()
-    time.sleep(600)  # Attend 10 minutes
+    time.sleep(600)
