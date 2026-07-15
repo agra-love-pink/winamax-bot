@@ -34,4 +34,4 @@ class WinamaxBot:
 if __name__ == "__main__":
     bot = WinamaxBot()
     bot.run()
-    time.sleep(600)  # 10 minutes
+    time.sleep(600)  # Attend 10 minutes
